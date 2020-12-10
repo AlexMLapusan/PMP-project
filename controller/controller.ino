@@ -1,7 +1,11 @@
+int ledPin = 50;
 int response = 0;
+boolean ledOn = false;
+
+int command;
 
 void setup() {
- 
+  pinMode(ledPin, OUTPUT);
   boolean start = false;
   // initialize both serial ports:
   Serial.begin(115200);
@@ -23,6 +27,26 @@ void setup() {
 }
 
 void loop() {
-//  Serial.println(digitalRead(3));
+  if(Serial1.available()){
+    command = Serial1.read();
+    switch (command){
+      case 1:
+        handleLed(); 
+        break;
+      default: break;
+    }
+    Serial.println(command);
+  }
   delay(10);
+}
+
+void handleLed(){
+  Serial.println("Lighting up led.");
+  if(!ledOn){
+    ledOn = true;
+    digitalWrite(ledPin, HIGH);
+  }else{
+    ledOn = false;
+    digitalWrite(ledPin, LOW);  
+  }
 }

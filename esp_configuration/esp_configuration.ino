@@ -32,7 +32,8 @@ void setup(void){
   Serial.println(WiFi.localIP());     //get network IP      
   
   server.on("/", HTTP_GET, rootHandler);     // call the rootHandler when someone accesses the base url
-
+  server.on("/LED", HTTP_GET, ledHandler);      //test a simple get request
+  
   server.onNotFound(_404Page);        // When a client requests an unknown URI (i.e. something other than "/"), call function "handleNotFound"
 
   server.begin();                           // Actually start the server
@@ -44,11 +45,16 @@ void setup(void){
 
 void loop(void){
   server.handleClient();                    // Listen for HTTP requests from clients
-  
 }
 
 void rootHandler() {                         // When URI / is requested, send a web page with a button to toggle the LED
   server.send(200, "text/html", "<form action=\"/LED\" method=\"POST\"><input type=\"submit\" value=\"Toggle LED\"></form>");
+}
+
+void ledHandler(){
+  Serial.println("Gonna send the led command.");
+  delay(10);
+  Serial.write(1);  
 }
 
 void _404Page(){
