@@ -38,6 +38,8 @@ void setup(void){
   server.begin();                           // Actually start the server
   Serial.println("HTTP server started");
   delay(10);
+  Serial.write(66); //start code that will be intercepted by the arduino board
+  delay(10);
 }
 
 void loop(void){
