@@ -1,11 +1,16 @@
-int ledPin = 50;
+#define LED_PIN 50
+#define INTERRUPT_PIN 3
+  
 int response = 0;
 boolean ledOn = false;
 
 int command;
 
 void setup() {
-  pinMode(ledPin, OUTPUT);
+  pinMode(LED_PIN, OUTPUT);
+  pinMode(3, INPUT_PULLUP);
+  attachInterrupt(digitalPinToInterrupt(3), sendNotification, FALLING);
+  
   boolean start = false;
   // initialize both serial ports:
   Serial.begin(115200);
@@ -44,9 +49,14 @@ void handleLed(){
   Serial.println("Lighting up led.");
   if(!ledOn){
     ledOn = true;
-    digitalWrite(ledPin, HIGH);
+    digitalWrite(LED_PIN, HIGH);
   }else{
     ledOn = false;
-    digitalWrite(ledPin, LOW);  
+    digitalWrite(LED_PIN, LOW);  
   }
+}
+
+void sendNotification(){
+  Serial1.println("Interrupted!");
+  Serial1.write(69);
 }
