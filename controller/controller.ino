@@ -1,3 +1,5 @@
+#include "songs.h"
+
 #define LED_PIN 50
 #define INTERRUPT_PIN 3
   
@@ -7,10 +9,10 @@ boolean ledOn = false;
 int command;
 
 void setup() {
+  Serial.begin(115200);
   pinMode(LED_PIN, OUTPUT);
   pinMode(3, INPUT_PULLUP);
   attachInterrupt(digitalPinToInterrupt(3), sendNotification, FALLING);
-  
   boolean start = false;
   // initialize both serial ports:
   Serial.begin(115200);
@@ -32,11 +34,15 @@ void setup() {
 }
 
 void loop() {
+  Serial.println(digitalRead(3));
   if(Serial1.available()){
     command = Serial1.read();
     switch (command){
       case 1:
         handleLed(); 
+        break;
+      case 2:
+        playRandomTune();
         break;
       default: break;
     }

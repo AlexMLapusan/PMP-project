@@ -33,6 +33,7 @@ void setup(void){
   
   server.on("/", HTTP_GET, rootHandler);     // call the rootHandler when someone accesses the base url
   server.on("/LED", HTTP_GET, ledHandler);      //test a simple get request
+  server.on("/play_tune", HTTP_GET, playTune);
   
   server.onNotFound(_404Page);        // When a client requests an unknown URI (i.e. something other than "/"), call function "handleNotFound"
 
@@ -63,6 +64,13 @@ void ledHandler(){
   Serial.println("Gonna send the led command.");
   delay(10);
   Serial.write(1);  
+}
+
+void playTune(){
+  Serial.println("Playing a random tune!");
+  delay(10);
+  Serial.write(2);
+  server.send(200, "text/html", "Received the request.");
 }
 
 void _404Page(){
