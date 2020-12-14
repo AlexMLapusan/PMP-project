@@ -34,6 +34,7 @@ void setup(void){
   server.on("/", HTTP_GET, rootHandler);     // call the rootHandler when someone accesses the base url
   server.on("/LED", HTTP_GET, ledHandler);      //test a simple get request
   server.on("/play_tune", HTTP_GET, playTune);
+  server.on("/setBrightness", HTTP_POST, pwmHandler);
   
   server.onNotFound(_404Page);        // When a client requests an unknown URI (i.e. something other than "/"), call function "handleNotFound"
 
@@ -41,6 +42,7 @@ void setup(void){
   Serial.println("HTTP server started");
   delay(10);
   Serial.write(66); //start code that will be intercepted by the arduino board
+//  Serial.print("start\n");
   delay(10);
 }
 
@@ -61,18 +63,32 @@ void rootHandler() {                         // When URI / is requested, send a 
 }
 
 void ledHandler(){
-  Serial.println("Gonna send the led command.");
   delay(10);
-  Serial.write(1);  
+  Serial.print("toggleLed\n");  
+  server.send(200, "text/html", "Led toggle command received.");
 }
 
 void playTune(){
-  Serial.println("Playing a random tune!");
+//  Serial.println("Playing a random tune!");
   delay(10);
-  Serial.write(2);
-  server.send(200, "text/html", "Received the request.");
+  Serial.print("singSong\n");
+  server.send(200, "text/html", "Command to sing a song received.");
 }
 
+void pwmHandler(){
+  delay(10);
+  
+  if(! server.hasArg("value")){
+    Serial.print(server.args());
+    server.send(400, "text/plain", "400: Invalid Request");         // The request is invalid, so send HTTP status 400
+    return;
+  }
+  int brightness = server.arg("value").toInt();
+  Serial.print("setBrightness\n");
+  delay(10);
+  Serial.write(brightness);  
+  server.send(200, "text/html", "Led brightness changed.");
+}
 void _404Page(){
   server.send(404, "text/plain", "404: Not found"); // Send HTTP status 404 (Not Found) when there's no handler for the URI in the request
 }

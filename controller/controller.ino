@@ -1,17 +1,20 @@
 #include "songs.h"
 
 #define LED_PIN 50
+#define PWM_LED_PIN 44
 #define INTERRUPT_PIN 3
   
 int response = 0;
 boolean ledOn = false;
-
-int command;
+int decodedCommand = -1;
+int command = "";
 
 void setup() {
   Serial.begin(115200);
   pinMode(LED_PIN, OUTPUT);
+  pinMode(PWM_LED_PIN, OUTPUT);
   pinMode(3, INPUT_PULLUP);
+  setLedBrightness(255);
   attachInterrupt(digitalPinToInterrupt(3), sendNotification, FALLING);
   boolean start = false;
   // initialize both serial ports:
@@ -28,25 +31,36 @@ void setup() {
       start = true;
     }
   }
-
   delay(10);
   Serial1.begin(115200);          //we must only start the serial port that interacts both ways with the esp only AFTER it finished setting up
 }
 
+String waitForCommand(){
+  String command = "";
+  while(!Serial1.available()); //busy waiting
+  command = Serial1.readStringUntil('\n');
+  return command;
+}
+
 void loop() {
-  Serial.println(digitalRead(3));
-  if(Serial1.available()){
-    command = Serial1.read();
-    switch (command){
-      case 1:
-        handleLed(); 
-        break;
-      case 2:
-        playRandomTune();
-        break;
-      default: break;
-    }
-    Serial.println(command);
+//  Serial.println(digitalRead(3));
+  String command = waitForCommand();
+  Serial.println(command);
+  decodedCommand = decodeCommand(command);
+  Serial.println(decodedCommand);
+  switch (decodedCommand){
+    case 1: 
+      handleLed(); 
+      break;
+    case 2:
+      playRandomTune();
+      break;
+    case 3:
+      while(!Serial1.available()); //busy waiting
+      int brightness = Serial1.read();
+      setLedBrightness(brightness);
+      break;
+    default: break;
   }
   delay(10);
 }
@@ -62,7 +76,21 @@ void handleLed(){
   }
 }
 
+void setLedBrightness(int brightness){
+  Serial.print("Led brightness: ");
+  Serial.println(brightness);
+  analogWrite(PWM_LED_PIN, brightness);
+}
+
 void sendNotification(){
   Serial1.println("Interrupted!");
   Serial1.write(69);
+}
+
+int decodeCommand(String command){
+  Serial.print(command);
+  if(command == "toggleLed") return 1;
+  if(command == "singSong") return 2;
+  if(command == "setBrightness") return 3;
+  return -1;
 }
