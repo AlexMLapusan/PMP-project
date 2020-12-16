@@ -2,20 +2,24 @@
 
 #define LED_PIN 50
 #define PWM_LED_PIN 44
+#define PHOTOCELL_PIN A10
 #define INTERRUPT_PIN 3
   
 int response = 0;
 boolean ledOn = false;
+boolean lightsOn = false;
 int decodedCommand = -1;
 int command = "";
+int lightLevel = 1024;
 
 void setup() {
   Serial.begin(115200);
   pinMode(LED_PIN, OUTPUT);
   pinMode(PWM_LED_PIN, OUTPUT);
+  pinMode(PHOTOCELL_PIN, INPUT);
   pinMode(3, INPUT_PULLUP);
   setLedBrightness(255);
-  attachInterrupt(digitalPinToInterrupt(3), sendNotification, FALLING);
+  attachInterrupt(digitalPinToInterrupt(3), turnOffLights, FALLING);
   boolean start = false;
   // initialize both serial ports:
   Serial.begin(115200);
@@ -37,7 +41,17 @@ void setup() {
 
 String waitForCommand(){
   String command = "";
-  while(!Serial1.available()); //busy waiting
+  while(!Serial1.available()){
+    if(!lightsOn){
+      lightLevel = analogRead(PHOTOCELL_PIN);
+      Serial.println(lightLevel);
+      if (lightLevel < 5){
+        Serial1.write(69); //send the "lights on" command to the esp which will in turn send a request for a notification
+        lightsOn = true;
+      }
+    }
+    delay(10);
+  }; //busy waiting
   command = Serial1.readStringUntil('\n');
   return command;
 }
@@ -82,9 +96,8 @@ void setLedBrightness(int brightness){
   analogWrite(PWM_LED_PIN, brightness);
 }
 
-void sendNotification(){
-  Serial1.println("Interrupted!");
-  Serial1.write(69);
+void turnOffLights(){
+  lightsOn = false;
 }
 
 int decodeCommand(String command){
