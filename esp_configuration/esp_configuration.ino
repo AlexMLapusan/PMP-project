@@ -9,8 +9,7 @@ ESP8266WiFiMulti wifiNetworks;     // ESP8266wifiNetworks helps in case we want 
 
 ESP8266WebServer server(80);    // Create a webserver object that listens for HTTP request on port 80
 
-void rootHandler();              //http handlers
-void _404Page();
+String command="";
 
 void setup(void){
   Serial.begin(115200);         // Start the Serial communication to send messages to the computer
@@ -47,19 +46,15 @@ void setup(void){
 }
 
 void loop(void){
-  server.handleClient();                    // Listen for HTTP requests from clients
-
-  if(Serial.available()){
-    int received = Serial.read();
-    if(received == 69){
-      Serial.println("Sending lights on command");
-      turnOnLights();
-    }
-    if(received == 70){
-      Serial.println("Sending lights off command");
-      turnOffLights();
-    }
-  }
+  while(!Serial.available()){
+    server.handleClient();                    // Listen for HTTP requests from clients  
+  };
+  command = Serial.readStringUntil('\n');
+  
+  Serial.println("Sending "+ command +" command");
+  switchHandler(command); //command can be "turn_on_lights" or "turn_off_lights"
+                          //the command will be send to IFTTT which will send another request acordingly
+  
 }
 
 void rootHandler() {                         // When URI / is requested, send a web page with a button to toggle the LED
@@ -98,9 +93,9 @@ void _404Page(){
 }
 
 
-void turnOnLights(){
+void switchHandler(String command){
   HTTPClient http;  //Declare an object of class HTTPClient
-  http.begin("http://maker.ifttt.com/trigger/turn_on_lights/with/key/batTuFYn3swI5si3qZy4J0pIkoVtVkpLtJGy_gwLCjE");  //Specify request destination
+  http.begin("http://maker.ifttt.com/trigger/" + command + "/with/key/byWzVFB5tx8JiCI4v9vWGI");  //Specify request destination
   
   int httpCode = http.GET();                      //Send the request
    
@@ -111,21 +106,6 @@ void turnOnLights(){
    
   http.end();   //Close connection
 }
-
-void turnOffLights(){
-  HTTPClient http;  //Declare an object of class HTTPClient
-  http.begin("http://maker.ifttt.com/trigger/turn_off_lights/with/key/batTuFYn3swI5si3qZy4J0pIkoVtVkpLtJGy_gwLCjE");  //Specify request destination
-  
-  int httpCode = http.GET();                      //Send the request
-   
-  if (httpCode > 0) { //Check the returning code
-    String payload = http.getString();            //Get the request response payload
-    Serial.println(payload);                      //Print the response payload
-  }
-   
-  http.end();   //Close connection
-}
-
 
 void sendNotification(String message){
   Serial.println("Sending the request, check the phone.");
