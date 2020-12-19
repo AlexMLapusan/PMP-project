@@ -4,7 +4,9 @@
 #define PWM_LED_PIN 44
 #define PHOTOCELL_PIN A10
 #define INTERRUPT_PIN 3
-  
+#define LIGHT_LOWER_LIMIT 5
+#define LIGHT_UPPER_LIMIT 20
+
 int response = 0;
 boolean ledOn = false;
 boolean lightsOn = false;
@@ -42,11 +44,17 @@ void setup() {
 String waitForCommand(){
   String command = "";
   while(!Serial1.available()){
-    if(!lightsOn){
-      lightLevel = analogRead(PHOTOCELL_PIN);
-      Serial.println(lightLevel);
-      if (lightLevel < 5){
-        Serial1.write(69); //send the "lights on" command to the esp which will in turn send a request for a notification
+    lightLevel = analogRead(PHOTOCELL_PIN);
+    Serial.println(lightLevel);
+    if(lightsOn){
+      if (lightLevel > LIGHT_UPPER_LIMIT){
+        Serial1.write(70);    //send the "lights off" command to the esp which will in turn send a request for a notification
+        lightsOn = false;
+      }
+    }
+    else{
+      if (lightLevel < LIGHT_LOWER_LIMIT){
+        Serial1.write(69);  //send the "lights on" command to the esp which will in turn send a request for a notification
         lightsOn = true;
       }
     }

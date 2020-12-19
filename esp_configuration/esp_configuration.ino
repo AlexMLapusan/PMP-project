@@ -52,8 +52,12 @@ void loop(void){
   if(Serial.available()){
     int received = Serial.read();
     if(received == 69){
-      Serial.println("The button was pushed");
-      sendNotification();
+      Serial.println("Sending lights on command");
+      turnOnLights();
+    }
+    if(received == 70){
+      Serial.println("Sending lights off command");
+      turnOffLights();
     }
   }
 }
@@ -93,10 +97,10 @@ void _404Page(){
   server.send(404, "text/plain", "404: Not found"); // Send HTTP status 404 (Not Found) when there's no handler for the URI in the request
 }
 
-void sendNotification(){
-  Serial.println("Sending the request, check the phone.");
+
+void turnOnLights(){
   HTTPClient http;  //Declare an object of class HTTPClient
-  http.begin("http://maker.ifttt.com/trigger/button_pressed/with/key/batTuFYn3swI5si3qZy4J0pIkoVtVkpLtJGy_gwLCjE");  //Specify request destination
+  http.begin("http://maker.ifttt.com/trigger/turn_on_lights/with/key/batTuFYn3swI5si3qZy4J0pIkoVtVkpLtJGy_gwLCjE");  //Specify request destination
   
   int httpCode = http.GET();                      //Send the request
    
@@ -106,4 +110,24 @@ void sendNotification(){
   }
    
   http.end();   //Close connection
+}
+
+void turnOffLights(){
+  HTTPClient http;  //Declare an object of class HTTPClient
+  http.begin("http://maker.ifttt.com/trigger/turn_off_lights/with/key/batTuFYn3swI5si3qZy4J0pIkoVtVkpLtJGy_gwLCjE");  //Specify request destination
+  
+  int httpCode = http.GET();                      //Send the request
+   
+  if (httpCode > 0) { //Check the returning code
+    String payload = http.getString();            //Get the request response payload
+    Serial.println(payload);                      //Print the response payload
+  }
+   
+  http.end();   //Close connection
+}
+
+
+void sendNotification(String message){
+  Serial.println("Sending the request, check the phone.");
+ 
 }
