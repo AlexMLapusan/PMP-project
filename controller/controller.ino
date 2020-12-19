@@ -132,5 +132,7 @@ int decodeCommand(String command){
 void resetBoard(){
   Serial.end();
   Serial1.end();
-  Serial2.end();
+  Serial3.end();
+  delay(100);
+  setup();
 }

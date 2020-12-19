@@ -71,6 +71,8 @@ void ledHandler(){
   
   String postData = server.arg("value1");  
   Serial.print("toggle_"+postData+"\n");  
+   
+  sendNotification("Lights turned " + postData);
   
   server.send(200, "text/html", "Led toggle command received.");
 }
@@ -111,11 +113,23 @@ void switchHandler(String command){
     String payload = http.getString();            //Get the request response payload
     Serial.println(payload);                      //Print the response payload
   }
-   
+ 
   http.end();   //Close connection
 }
 
 void sendNotification(String message){
-  Serial.println("Sending the request, check the phone.");
- 
+  Serial.println("Sending the notification with message: "+ message);
+  HTTPClient http;  //Declare an object of class HTTPClient
+  http.begin("http://maker.ifttt.com/trigger/notification/with/key/batTuFYn3swI5si3qZy4J0pIkoVtVkpLtJGy_gwLCjE");  //Specify request destination
+
+  http.addHeader("Content-Type", "application/json");
+  
+  int httpCode = http.POST("{\"value1\":\"" + message + "\"}" );                    //Send the request
+   
+  if (httpCode > 0) { //Check the returning code
+    String payload = http.getString();            //Get the request response payload
+    Serial.println(payload);                      //Print the response payload
+  }
+   
+  http.end();   //Close connection
 }
