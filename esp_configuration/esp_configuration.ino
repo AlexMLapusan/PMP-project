@@ -31,7 +31,7 @@ void setup(void){
   Serial.println(WiFi.localIP());     //get network IP      
   
   server.on("/", HTTP_GET, rootHandler);     // call the rootHandler when someone accesses the base url
-  server.on("/LED", HTTP_GET, ledHandler);      //test a simple get request
+  server.on("/LED", HTTP_POST, ledHandler);      //test a simple get request
   server.on("/play_tune", HTTP_GET, playTune);
   server.on("/setBrightness", HTTP_POST, pwmHandler);
   
@@ -63,7 +63,15 @@ void rootHandler() {                         // When URI / is requested, send a 
 
 void ledHandler(){
   delay(10);
-  Serial.print("toggleLed\n");  
+  if(! server.hasArg("value1")){
+    Serial.print(server.args());
+    server.send(400, "text/plain", "400: Invalid Request");         // The request is invalid, so send HTTP status 400
+    return;
+  }
+  
+  String postData = server.arg("value1");  
+  Serial.print("toggle_"+postData+"\n");  
+  
   server.send(200, "text/html", "Led toggle command received.");
 }
 
