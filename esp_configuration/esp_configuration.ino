@@ -31,7 +31,7 @@ void setup(void){
   Serial.println(WiFi.localIP());     //get network IP      
   
   server.on("/", HTTP_GET, rootHandler);     // call the rootHandler when someone accesses the base url
-  server.on("/LED", HTTP_POST, ledHandler);      //test a simple get request
+  server.on("/LED", HTTP_POST, ledHandler);     
   server.on("/play_tune", HTTP_GET, playTune);
   server.on("/setBrightness", HTTP_POST, pwmHandler);
   
@@ -61,6 +61,7 @@ void rootHandler() {                         // When URI / is requested, send a 
   server.send(200, "text/html", "<form action=\"/LED\" method=\"POST\"><input type=\"submit\" value=\"Toggle LED\"></form>");
 }
 
+/*This function handles the request responsible with turning the lights on/off*/
 void ledHandler(){
   delay(10);
   if(! server.hasArg("value1")){
@@ -69,7 +70,7 @@ void ledHandler(){
     return;
   }
   
-  String postData = server.arg("value1");  
+  String postData = server.arg("value1");  //value1 argument should "on" or "off"
   Serial.print("toggle_"+postData+"\n");  
    
   sendNotification("Lights turned " + postData);
@@ -84,6 +85,7 @@ void playTune(){
   server.send(200, "text/html", "Command to sing a song received.");
 }
 
+/*This function handles the request responsible with commanding the arduino to play a random tune on the speaker*/
 void pwmHandler(){
   delay(10);
   
@@ -98,11 +100,14 @@ void pwmHandler(){
   Serial.write(brightness);  
   server.send(200, "text/html", "Led brightness changed.");
 }
+
 void _404Page(){
   server.send(404, "text/plain", "404: Not found"); // Send HTTP status 404 (Not Found) when there's no handler for the URI in the request
 }
 
-
+/*Function responsible to send a GET request to IFTTT using webhooks to catch that request
+  The command has one of the following values: "turn_on_lights", "turn_off_lights"
+*/
 void switchHandler(String command){
   HTTPClient http;  //Declare an object of class HTTPClient
   http.begin("http://maker.ifttt.com/trigger/" + command + "/with/key/byWzVFB5tx8JiCI4v9vWGI");  //Specify request destination
@@ -111,14 +116,19 @@ void switchHandler(String command){
    
   if (httpCode > 0) { //Check the returning code
     String payload = http.getString();            //Get the request response payload
-    Serial.println(payload);                      //Print the response payload
+//    Serial.println(payload);                      //Print the response payload
   }
  
   http.end();   //Close connection
 }
 
+//TODO: make status web page
+
+/*Function responsible to send a GET request to IFTTT using webhooks which will as a result send a notification to the phone
+  The message we want to be displayed in the notification is passed as a parameter to this function
+*/
 void sendNotification(String message){
-  Serial.println("Sending the notification with message: "+ message);
+//  Serial.println("Sending the notification with message: "+ message);
   HTTPClient http;  //Declare an object of class HTTPClient
   http.begin("http://maker.ifttt.com/trigger/notification/with/key/batTuFYn3swI5si3qZy4J0pIkoVtVkpLtJGy_gwLCjE");  //Specify request destination
 
@@ -128,7 +138,7 @@ void sendNotification(String message){
    
   if (httpCode > 0) { //Check the returning code
     String payload = http.getString();            //Get the request response payload
-    Serial.println(payload);                      //Print the response payload
+//    Serial.println(payload);                      //Print the response payload
   }
    
   http.end();   //Close connection

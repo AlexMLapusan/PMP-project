@@ -21,7 +21,7 @@ void setup() {
   pinMode(PWM_LED_PIN, OUTPUT);
   pinMode(PHOTOCELL_PIN, INPUT);
   pinMode(3, INPUT_PULLUP);
-  attachInterrupt(digitalPinToInterrupt(3), resetBoard, FALLING);
+  attachInterrupt(digitalPinToInterrupt(3), manuallyTurnOffLights, FALLING);
   
   //initializations
   setLedBrightness(255);
@@ -82,10 +82,10 @@ void loop() {
 //  Serial.println(decodedCommand);
   switch (decodedCommand){
     case 0: 
-      turnOnLed(); 
+      turnOnLights(); 
       break;
     case 1: 
-      turnOffLed(); 
+      turnOffLights(); 
       break;
     case 2:
       playRandomTune();
@@ -100,12 +100,12 @@ void loop() {
   delay(10);
 }
 
-void turnOnLed(){
+void turnOnLights(){
   digitalWrite(LED_PIN, HIGH);
   lightsOn = true;
 }
 
-void turnOffLed(){
+void turnOffLights(){
   digitalWrite(LED_PIN, LOW);  
   lightsOn = false;
 }
@@ -114,10 +114,6 @@ void setLedBrightness(int brightness){
   Serial.print("Led brightness: ");
   Serial.println(brightness);
   analogWrite(PWM_LED_PIN, brightness);
-}
-
-void turnOffLights(){
-  lightsOn = false;
 }
 
 int decodeCommand(String command){
@@ -129,10 +125,6 @@ int decodeCommand(String command){
   return -1;
 }
 
-void resetBoard(){
-  Serial.end();
-  Serial1.end();
-  Serial3.end();
-  delay(100);
-  setup();
+void manuallyTurnOffLights(){
+  turnOffLights();
 }
