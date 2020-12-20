@@ -60,14 +60,14 @@ String waitForCommand(){
     if(lightsOn){
       if (lightLevel > LIGHT_UPPER_LIMIT){
         Serial1.print("turn_off_lights\n");    //send the "lights off" command to the esp which will in turn send a request for a notification
-        delay(500);
+        delay(10);
         lightsOn = false;
       }
     }
     else{
       if (lightLevel < LIGHT_LOWER_LIMIT){
         Serial1.print("turn_on_lights\n");  //send the "lights on" command to the esp which will in turn send a request for a notification
-        delay(500);
+        delay(10);
         lightsOn = true;
       }
     }

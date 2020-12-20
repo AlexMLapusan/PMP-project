@@ -227,5 +227,4 @@ void playRandomTune(){
       default: break;
     }
   delay(50);
-  vol.end();
 }
