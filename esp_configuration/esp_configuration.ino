@@ -9,6 +9,8 @@ ESP8266WiFiMulti wifiNetworks;     // ESP8266wifiNetworks helps in case we want 
 
 ESP8266WebServer server(80);    // Create a webserver object that listens for HTTP request on port 80
 
+String pageLink = "http://654cc130ba61.ngrok.io";
+
 String command="";
 
 String lightsStatus = "off";
@@ -64,16 +66,36 @@ void loop(void){
 void rootHandler() {                         // When URI / is requested, send a web page
   String page = "<head>"
   "<title>Status</title>"
-  "<meta http-equiv=\"refresh\" content=\"60\">"
+//  "<meta http-equiv=\"refresh\" content=\"60\">"
   "<meta name=\"Alex L.\" content=\"\">"
   "<script src=\"http://code.jquery.com/jquery-latest.min.js\"></script>"
   "</head>"
   "<body>"
     "<div class=\"container\">"
-      "<div> Lights: " + lightsStatus + "  </div>"
+      "<div id=\"lights_status\"> Lights: " + lightsStatus + "  </div> "
+        "<button id = \"off\"type=\"button\">Turn off</button> "
+        "<button id = \"on\"type=\"button\">Turn on</button> "
       "<div> PWM led value: " + PWMValue + " </div>"
       "<div> Last sung tune:" + lastTune + "</div>"
     "</div>"
+    "<script>"
+      "const settings = {"
+        "\"url\": \"" + pageLink + "/LED\","
+        "\"method\": \"POST\","
+        "\"timeout\": 0,"
+        "\"headers\": {"
+        "\"Content-Type\": \"application/x-www-form-urlencoded\""
+      "},"
+    "};"  
+    "jQuery(\"#on\").click(()=>{"
+      "settings[\"data\"] = {\"value1\" : \"on\"};"
+      "jQuery.ajax(settings).done(jQuery(\"#lights_status\").html(\"Lights: on\"));"
+    "});"
+    "jQuery(\"#off\").click(()=>{"
+      "settings[\"data\"] = {\"value1\" : \"off\"};"
+      "jQuery.ajax(settings).done(jQuery(\"#lights_status\").html(\"Lights: off\"));"
+    "});"
+  "</script>"
   "</body>";
   server.send(200, "text/html", page);
 }
@@ -123,6 +145,12 @@ void pwmHandler(){
   int brightness = PWMValue.toInt();
   Serial.print("setBrightness\n");
   delay(10);
+  if(brightness < 0){
+    brightness = 0;
+  }
+  if(brightness > 255){
+    brightness = 255;
+  }
   Serial.write(brightness);
   server.send(200, "text/html", "Led brightness changed.");
 }
@@ -160,7 +188,7 @@ void sendNotification(String message){
 
   http.addHeader("Content-Type", "application/json");
   
-  int httpCode = http.POST("{\"value1\":\"" + message + "\"}" );                    //Send the request
+  int httpCode = http.POST("{\"value1\":\"" + message + "\", \"value2\":\"" + pageLink + "\"}" );                    //Send the request
    
   if (httpCode > 0) { //Check the returning code
     String payload = http.getString();            //Get the request response payload

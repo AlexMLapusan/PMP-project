@@ -132,6 +132,13 @@ int decodeCommand(String command){
 }
 
 void manuallyTurnOffLights(){
-  Serial1.print("turn_off_lights\n");    //send the "lights off" command to the esp which will in turn send a request for a notification
-  lightsOn = false;
+  static unsigned long last_interrupt_time = 0;
+  unsigned long interrupt_time = millis();
+  // If interrupts come faster than 200ms, assume it's a bounce and ignore
+  if (interrupt_time - last_interrupt_time > 200)
+  {
+    Serial1.print("turn_off_lights\n");    //send the "lights off" command to the esp which will in turn send a request for a notification
+    lightsOn = false;
+  }
+  last_interrupt_time = interrupt_time;
 }
