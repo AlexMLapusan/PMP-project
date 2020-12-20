@@ -1,6 +1,6 @@
 #include "songs.h"
 
-#define LED_PIN 50
+#define LED_PIN 40
 #define PWM_LED_PIN 44
 #define PHOTOCELL_PIN A10
 #define INTERRUPT_PIN 3
@@ -56,15 +56,18 @@ String waitForCommand(){
     lightLevel = analogRead(PHOTOCELL_PIN);
 //    if(lightLevel < LIGHT_LOWER_LIMIT || lightLevel > LIGHT_UPPER_LIMIT)
 //      Serial.println(lightLevel);
+//    Serial.println(lightsOn);
     if(lightsOn){
       if (lightLevel > LIGHT_UPPER_LIMIT){
         Serial1.print("turn_off_lights\n");    //send the "lights off" command to the esp which will in turn send a request for a notification
+        delay(500);
         lightsOn = false;
       }
     }
     else{
       if (lightLevel < LIGHT_LOWER_LIMIT){
         Serial1.print("turn_on_lights\n");  //send the "lights on" command to the esp which will in turn send a request for a notification
+        delay(500);
         lightsOn = true;
       }
     }

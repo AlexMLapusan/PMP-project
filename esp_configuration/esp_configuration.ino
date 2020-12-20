@@ -9,7 +9,7 @@ ESP8266WiFiMulti wifiNetworks;     // ESP8266wifiNetworks helps in case we want 
 
 ESP8266WebServer server(80);    // Create a webserver object that listens for HTTP request on port 80
 
-String pageLink = "http://654cc130ba61.ngrok.io";
+String pageLink = "http://654cc130ba61.ngrok.io"; //link provided by Ngrok
 
 String command="";
 
@@ -57,7 +57,7 @@ void loop(void){
   };
   command = Serial.readStringUntil('\n');
   
-  Serial.println("Sending "+ command +" command");
+//  Serial.println("Sending "+ command +" command");
   switchHandler(command); //command can be "turn_on_lights" or "turn_off_lights"
                           //the command will be send to IFTTT which will send another request acordingly
   

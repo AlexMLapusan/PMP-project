@@ -225,5 +225,7 @@ void playRandomTune(){
         playBeethoven();
         break;
       default: break;
-    } 
+    }
+  delay(50);
+  vol.end();
 }
