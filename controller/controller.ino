@@ -78,11 +78,11 @@ void loop() {
 //  Serial.println(digitalRead(3));
   String command = waitForCommand();
   Serial.println(command);
-  decodedCommand = decodeCommand(command);
+  decodedCommand = decodeCommand(command); //After getting the command (which is a string) this function turns it into a number so that I can use a case statement
 //  Serial.println(decodedCommand);
   switch (decodedCommand){
     case 0: 
-      turnOnLights(); 
+      turnOnLights();
       break;
     case 1: 
       turnOffLights(); 
@@ -103,11 +103,17 @@ void loop() {
 void turnOnLights(){
   digitalWrite(LED_PIN, HIGH);
   lightsOn = true;
+//  Serial1.print("lights_notice\n");
+//  delay(10);
+//  Serial1.print("on\n");
 }
 
 void turnOffLights(){
   digitalWrite(LED_PIN, LOW);  
   lightsOn = false;
+//  Serial1.print("lights_notice\n");
+//  delay(10);
+//  Serial1.print("off\n");
 }
 
 void setLedBrightness(int brightness){
@@ -126,5 +132,6 @@ int decodeCommand(String command){
 }
 
 void manuallyTurnOffLights(){
-  turnOffLights();
+  Serial1.print("turn_off_lights\n");    //send the "lights off" command to the esp which will in turn send a request for a notification
+  lightsOn = false;
 }

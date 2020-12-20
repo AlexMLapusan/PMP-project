@@ -143,7 +143,7 @@ int beethovenNotesDuration[] = {
 };
 
 void playMario(){
-    Serial.println("Mario Theme");
+    Serial1.println("Mario Theme\n");
     int size = sizeof(mario) / sizeof(int);
     int _volume = 255;
     for (int thisNote = 0; thisNote < size; thisNote++) 
@@ -166,7 +166,7 @@ void playMario(){
 void playNever()
 {
 
-    Serial.println("Never gonna give you up");
+    Serial1.println("Never gonna give you up\n");
     int size = sizeof(never) / sizeof(int);
     int _volume = 255;
     for (int thisNote = 0; thisNote < size; thisNote++) 
@@ -189,7 +189,7 @@ void playNever()
 
 void playBeethoven()
 {
-    Serial.println("Ode to Joy - Beethoven's Symphony No. 9");
+    Serial1.println("Ode to Joy - Beethoven's Symphony No. 9\n");
     int size = sizeof(beethovenNotes) / sizeof(int);
     int _volume = 255;
     for (int thisNote = 0; thisNote < size; thisNote++) 

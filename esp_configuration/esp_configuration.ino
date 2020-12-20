@@ -11,6 +11,10 @@ ESP8266WebServer server(80);    // Create a webserver object that listens for HT
 
 String command="";
 
+String lightsStatus = "off";
+String PWMValue = "255";
+String lastTune = "None";
+
 void setup(void){
   Serial.begin(115200);         // Start the Serial communication to send messages to the computer
   delay(10);
@@ -57,9 +61,24 @@ void loop(void){
   
 }
 
-void rootHandler() {                         // When URI / is requested, send a web page with a button to toggle the LED
-  server.send(200, "text/html", "<form action=\"/LED\" method=\"POST\"><input type=\"submit\" value=\"Toggle LED\"></form>");
+void rootHandler() {                         // When URI / is requested, send a web page
+  String page = "<head>"
+  "<title>Status</title>"
+  "<meta http-equiv=\"refresh\" content=\"60\">"
+  "<meta name=\"Alex L.\" content=\"\">"
+  "<script src=\"http://code.jquery.com/jquery-latest.min.js\"></script>"
+  "</head>"
+  "<body>"
+    "<div class=\"container\">"
+      "<div> Lights: " + lightsStatus + "  </div>"
+      "<div> PWM led value: " + PWMValue + " </div>"
+      "<div> Last sung tune:" + lastTune + "</div>"
+    "</div>"
+  "</body>";
+  server.send(200, "text/html", page);
 }
+
+
 
 /*This function handles the request responsible with turning the lights on/off*/
 void ledHandler(){
@@ -75,6 +94,8 @@ void ledHandler(){
    
   sendNotification("Lights turned " + postData);
   
+  lightsStatus = postData; //update data for the root page
+  
   server.send(200, "text/html", "Led toggle command received.");
 }
 
@@ -82,6 +103,10 @@ void playTune(){
 //  Serial.println("Playing a random tune!");
   delay(10);
   Serial.print("singSong\n");
+  while(!Serial.available()){
+    server.handleClient();                    // Listen for HTTP requests from clients  
+  };
+  lastTune = Serial.readStringUntil('\n');
   server.send(200, "text/html", "Command to sing a song received.");
 }
 
@@ -94,10 +119,11 @@ void pwmHandler(){
     server.send(400, "text/plain", "400: Invalid Request");         // The request is invalid, so send HTTP status 400
     return;
   }
-  int brightness = server.arg("value").toInt();
+  PWMValue = server.arg("value");
+  int brightness = PWMValue.toInt();
   Serial.print("setBrightness\n");
   delay(10);
-  Serial.write(brightness);  
+  Serial.write(brightness);
   server.send(200, "text/html", "Led brightness changed.");
 }
 
@@ -116,7 +142,7 @@ void switchHandler(String command){
    
   if (httpCode > 0) { //Check the returning code
     String payload = http.getString();            //Get the request response payload
-//    Serial.println(payload);                      //Print the response payload
+//    Serial.println(payload);                      //Print the response payload, this was used while debugging
   }
  
   http.end();   //Close connection
@@ -138,7 +164,7 @@ void sendNotification(String message){
    
   if (httpCode > 0) { //Check the returning code
     String payload = http.getString();            //Get the request response payload
-//    Serial.println(payload);                      //Print the response payload
+//    Serial.println(payload);                      //Print the response payload (useful while debugging)
   }
    
   http.end();   //Close connection
