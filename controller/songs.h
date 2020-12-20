@@ -142,9 +142,7 @@ int beethovenNotesDuration[] = {
   
 };
 
-void playMario()
-{
-	vol.begin();
+void playMario(){
     Serial.println("Mario Theme");
     int size = sizeof(mario) / sizeof(int);
     int _volume = 255;
@@ -167,7 +165,7 @@ void playMario()
 
 void playNever()
 {
-	vol.begin();
+
     Serial.println("Never gonna give you up");
     int size = sizeof(never) / sizeof(int);
     int _volume = 255;
@@ -191,7 +189,6 @@ void playNever()
 
 void playBeethoven()
 {
-	vol.begin();
     Serial.println("Ode to Joy - Beethoven's Symphony No. 9");
     int size = sizeof(beethovenNotes) / sizeof(int);
     int _volume = 255;
@@ -214,6 +211,8 @@ void playBeethoven()
 }
 
 void playRandomTune(){
+  vol.begin();
+  delay(50);
 	int song = random(4);
 	switch (song){
       case 0:
@@ -222,7 +221,7 @@ void playRandomTune(){
       case 1:
         playNever();
         break;
-	  case 2:
+	    case 2:
         playBeethoven();
         break;
       default: break;

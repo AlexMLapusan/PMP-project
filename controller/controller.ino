@@ -4,28 +4,39 @@
 #define PWM_LED_PIN 44
 #define PHOTOCELL_PIN A10
 #define INTERRUPT_PIN 3
-  
+#define LIGHT_LOWER_LIMIT 5
+#define LIGHT_UPPER_LIMIT 30
+
 int response = 0;
-boolean ledOn = false;
 boolean lightsOn = false;
 int decodedCommand = -1;
 int command = "";
 int lightLevel = 1024;
 
 void setup() {
+  //setup
+  randomSeed(analogRead(0));
   Serial.begin(115200);
   pinMode(LED_PIN, OUTPUT);
   pinMode(PWM_LED_PIN, OUTPUT);
   pinMode(PHOTOCELL_PIN, INPUT);
   pinMode(3, INPUT_PULLUP);
+  attachInterrupt(digitalPinToInterrupt(3), manuallyTurnOffLights, FALLING);
+  
+  //initializations
   setLedBrightness(255);
-  attachInterrupt(digitalPinToInterrupt(3), turnOffLights, FALLING);
+  lightsOn = false;
+  digitalWrite(LED_PIN, LOW);
   boolean start = false;
+  
+  //The following usage of 2 different ports is necesssary because of the way the connections between the ESP and the arduino board is made
+  //I.E. the RX and TX of the ESP must be connected to the TX and RX of the board HOWEVER if they are connected while the ESP is being set up
+  //they will interfer and so it will result in a fail. To avoid that I connected the TX pin of the ESP to the third serial receiver of the arduino mega board
+  //and I sent "66" as an "all good" code after the ESP has finished its setup. Upon receiving it, we can safely turn on the Serial1 port in order to communicate with the ESP 
   // initialize both serial ports:
   Serial.begin(115200);
   Serial3.begin(115200);
   Serial.println("Waiting for the start signal");
-  //this bit is necessary to 
   while(!start){ 
     response = Serial3.read();
     if(response != -1)
@@ -42,11 +53,18 @@ void setup() {
 String waitForCommand(){
   String command = "";
   while(!Serial1.available()){
-    if(!lightsOn){
-      lightLevel = analogRead(PHOTOCELL_PIN);
-      Serial.println(lightLevel);
-      if (lightLevel < 5){
-        Serial1.write(69); //send the "lights on" command to the esp which will in turn send a request for a notification
+    lightLevel = analogRead(PHOTOCELL_PIN);
+//    if(lightLevel < LIGHT_LOWER_LIMIT || lightLevel > LIGHT_UPPER_LIMIT)
+//      Serial.println(lightLevel);
+    if(lightsOn){
+      if (lightLevel > LIGHT_UPPER_LIMIT){
+        Serial1.print("turn_off_lights\n");    //send the "lights off" command to the esp which will in turn send a request for a notification
+        lightsOn = false;
+      }
+    }
+    else{
+      if (lightLevel < LIGHT_LOWER_LIMIT){
+        Serial1.print("turn_on_lights\n");  //send the "lights on" command to the esp which will in turn send a request for a notification
         lightsOn = true;
       }
     }
@@ -61,10 +79,13 @@ void loop() {
   String command = waitForCommand();
   Serial.println(command);
   decodedCommand = decodeCommand(command);
-  Serial.println(decodedCommand);
+//  Serial.println(decodedCommand);
   switch (decodedCommand){
+    case 0: 
+      turnOnLights(); 
+      break;
     case 1: 
-      handleLed(); 
+      turnOffLights(); 
       break;
     case 2:
       playRandomTune();
@@ -79,15 +100,14 @@ void loop() {
   delay(10);
 }
 
-void handleLed(){
-  Serial.println("Lighting up led.");
-  if(!ledOn){
-    ledOn = true;
-    digitalWrite(LED_PIN, HIGH);
-  }else{
-    ledOn = false;
-    digitalWrite(LED_PIN, LOW);  
-  }
+void turnOnLights(){
+  digitalWrite(LED_PIN, HIGH);
+  lightsOn = true;
+}
+
+void turnOffLights(){
+  digitalWrite(LED_PIN, LOW);  
+  lightsOn = false;
 }
 
 void setLedBrightness(int brightness){
@@ -96,14 +116,15 @@ void setLedBrightness(int brightness){
   analogWrite(PWM_LED_PIN, brightness);
 }
 
-void turnOffLights(){
-  lightsOn = false;
-}
-
 int decodeCommand(String command){
   Serial.print(command);
-  if(command == "toggleLed") return 1;
+  if(command == "toggle_on") return 0;
+  if(command == "toggle_off") return 1;
   if(command == "singSong") return 2;
   if(command == "setBrightness") return 3;
   return -1;
+}
+
+void manuallyTurnOffLights(){
+  turnOffLights();
 }
